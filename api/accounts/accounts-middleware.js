@@ -1,4 +1,5 @@
 const Account = require('./accounts-model')
+const db = require('../../data/db-config')
 
 exports.checkAccountPayload = (req, res, next) => {
   // DO YOUR MAGIC
@@ -23,10 +24,20 @@ exports.checkAccountPayload = (req, res, next) => {
   }
 }
 
-exports.checkAccountNameUnique = (req, res, next) => {
+exports.checkAccountNameUnique = async (req, res, next) => {
   // DO YOUR MAGIC
-  console.log('check unique middleware')
-  next()
+  try {
+    const existing = await db('accounts').where('name', req.body.name.trim()).first()
+
+    if (existing) {
+      next({ status: 400, message: 'that name is taken' })
+    } else {
+      next()
+    }
+
+  } catch (err) {
+      next(err)
+  }
 }
 
 exports.checkAccountId = async (req, res, next) => {
